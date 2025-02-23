@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced 2D Shooting Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; color: white; font-family: Arial, sans-serif; }
+        canvas { display: block; }
+        #scoreboard { position: absolute; top: 10px; left: 10px; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <div id="scoreboard">Score: <span id="score">0</span></div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let score = 0;
+        document.getElementById('score').innerText = score;
+
+        const player = { x: canvas.width / 2, y: canvas.height - 60, width: 50, height: 30, color: 'blue', bullets: [] };
+        const enemies = [];
+
+        function createEnemy() {
+            enemies.push({ x: Math.random() * (canvas.width - 30), y: 0, radius: 15, color: 'red', speed: Math.random() * 2 + 1 });
+        }
+
+        function shoot() {
+            player.bullets.push({ x: player.x + 25, y: player.y, radius: 5, color: 'yellow', speed: 7 });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') shoot();
+            if (event.code === 'ArrowLeft' && player.x > 0) player.x -= 20;
+            if (event.code === 'ArrowRight' && player.x < canvas.width - player.width) player.x += 20;
+        });
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw player (gun shape)
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = 'gray';
+            ctx.fillRect(player.x + 20, player.y - 15, 10, 15); // Gun barrel
+            
+            player.bullets.forEach((bullet, bIndex) => {
+                bullet.y -= bullet.speed;
+                ctx.fillStyle = bullet.color;
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+                ctx.fill();
+                if (bullet.y < 0) player.bullets.splice(bIndex, 1);
+            });
+            
+            enemies.forEach((enemy, eIndex) => {
+                enemy.y += enemy.speed;
+                ctx.fillStyle = enemy.color;
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                player.bullets.forEach((bullet, bIndex) => {
+                    const dx = bullet.x - enemy.x;
+                    const dy = bullet.y - enemy.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < bullet.radius + enemy.radius) {
+                        player.bullets.splice(bIndex, 1);
+                        enemies.splice(eIndex, 1);
+                        score += 10;
+                        document.getElementById('score').innerText = score;
+                    }
+                });
+                
+                if (enemy.y > canvas.height) enemies.splice(eIndex, 1);
+            });
+            
+            requestAnimationFrame(update);
+        }
+
+        setInterval(createEnemy, 1000);
+        update();
+    </script>
+</body>
+</html>
