@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // ✅ Check if the user is a Regular User
         if (storedPassword && enteredPassword === storedPassword) {
-            window.location.href = "dashboard.html";
+            window.location.href = "game.html";
         } else {
             // 🔴 Show Bootstrap Alert
             errorAlert.style.display = "block";
